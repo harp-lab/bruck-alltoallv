@@ -21,8 +21,6 @@ int main(int argc, char **argv)
     if (MPI_Comm_rank(MPI_COMM_WORLD, &rank) != MPI_SUCCESS)
     	std::cout << "ERROR: MPI_Comm_rank error\n" << std::endl;
 
-    srand (time(NULL));
-
 	run_uniform(nprocs);
 
 	MPI_Finalize();

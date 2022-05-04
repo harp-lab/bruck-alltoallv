@@ -7,8 +7,7 @@
 #ifndef UNIFORM_BRUCK_H_
 #define UNIFORM_BRUCK_H_
 
-#include <mpi.h>
-#include <iostream>
+#include "../brucks.h"
 
 void basic_bruck_uniform_benchmark(char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
 void datatype_bruck_uniform_benchmark(char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm);
