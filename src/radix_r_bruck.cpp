@@ -126,7 +126,7 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 	MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, comm);
 
 	if (total_time == max_time) {
-		std::cout << "[UniformRbruck] " <<  total_time << ", " << first_time << ", " << conv_time << ", "
+		std::cout << "[UniformRbruck] " << " [" << nprocs << " " << sendcount << "] " <<  total_time << ", " << first_time << ", " << conv_time << ", "
 				<< pre_time << ", " << comm_time << ", " << replace_time << ", " << second_time << std::endl;
 	}
 }
