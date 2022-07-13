@@ -14,5 +14,6 @@
 #include <math.h>
 #include <cstring>
 #include <algorithm>
+#include <string>
 
 #endif /* BRUCKS_H_ */

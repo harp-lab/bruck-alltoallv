@@ -19,7 +19,7 @@ std::vector<int> convert10tob(int w, int N, int b)
 	return v;
 }
 
-void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
+void uniform_radix_r_bruck(double timelist[][7], int it, int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
 {
 	double ts = MPI_Wtime();
 
@@ -121,20 +121,35 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 	e = MPI_Wtime();
 	double second_time = e - s;
 
-
     double te = MPI_Wtime();
-	double max_time = 0;
 	double total_time = te - ts;
-	MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, comm);
 
-	if (total_time == max_time) {
-		std::cout << "[UniformRbruck] " << " [" << nprocs << " " << sendcount << " " << r << "] " <<  total_time << ", " << first_time << ", " << conv_time << ", "
-				<< pre_time << ", " << comm_time << ", " << replace_time << ", " << second_time  << " " << istep << " "<< total_comm_steps << std::endl;
+	timelist[it][0] = total_time;
+	timelist[it][1] = first_time;
+	timelist[it][2] = conv_time;
+	timelist[it][3] = pre_time;
+	timelist[it][4] = comm_time;
+	timelist[it][5] = replace_time;
+	timelist[it][6] = second_time;
 
-		std::cout << "Sent data-blocks per step: ";
+
+	if (it % 20 == 0 && rank == 0 && sendcount == 2) {
+		std::cout << "UniformRbruck-Metadata: " << nprocs << " " << sendcount << " " << r << " " << istep << " " << total_comm_steps << std::endl;
+
+		std::cout << "UniformRbruck-SentDBpstep: ";
 		for (int i = 0; i < istep; i++) {
 			std::cout << nblocks_perstep[i] << " ";
 		}
 		std::cout << std::endl;
 	}
+			//[total_time, first_time, conv_time, pre_time, comm_time, replace_time, second_time];
+//	MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, comm);
+//	totaltime[i] = total_time;
+
+//	if (total_time == max_time) {
+//		std::cout << "[UniformRbruck] " << " [" << nprocs << " " << sendcount << " " << r << "] " <<  total_time << ", " << first_time << ", " << conv_time << ", "
+//				<< pre_time << ", " << comm_time << ", " << replace_time << ", " << second_time  << " " << istep << " "<< total_comm_steps << std::endl;
+//
+
+//	}
 }
