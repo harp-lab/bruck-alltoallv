@@ -48,15 +48,17 @@ static void run_radix_r_bruck(int nprocs, int r)
 
 		long long* recv_buffer = new long long[n*nprocs];
 
-		double comm_start = MPI_Wtime();
-		MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-		double comm_end = MPI_Wtime();
+		for (int it=0; it < ITERATION_COUNT; it++) {
+			double comm_start = MPI_Wtime();
+			MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
+			double comm_end = MPI_Wtime();
 
-		double max_time = 0;
-		double total_time = comm_end - comm_start;
-		MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-		if (total_time == max_time)
-			std::cout << "[MPIAlltoall]" << " [" << nprocs << " " << n << "] "<<  max_time << std::endl;
+			double max_time = 0;
+			double total_time = comm_end - comm_start;
+			MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+			if (total_time == max_time)
+				std::cout << "[MPIAlltoall]" << " [" << nprocs << " " << n << "] "<<  max_time << std::endl;
+		}
 
 		MPI_Barrier(MPI_COMM_WORLD);
 		if (rank == 0)

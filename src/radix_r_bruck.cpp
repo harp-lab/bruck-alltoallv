@@ -56,6 +56,7 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 
 	int comm_steps = (r - 1)*w - d;
 	int nblocks_perstep[comm_steps];
+	int total_comm_steps = 0;
 	int istep = 0;
 
 	char* temp_buffer = (char*)malloc(nlpow * unit_size); // temporary buffer
@@ -80,6 +81,7 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
     			}
     		}
     		nblocks_perstep[istep++] = di;
+    		total_comm_steps += di;
     		e = MPI_Wtime();
     		pre_time += e - s;
 
@@ -126,7 +128,13 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 	MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, comm);
 
 	if (total_time == max_time) {
-		std::cout << "[UniformRbruck] " << " [" << nprocs << " " << sendcount << "] " <<  total_time << ", " << first_time << ", " << conv_time << ", "
-				<< pre_time << ", " << comm_time << ", " << replace_time << ", " << second_time << std::endl;
+		std::cout << "[UniformRbruck] " << " [" << nprocs << " " << sendcount << " " << r << "] " <<  total_time << ", " << first_time << ", " << conv_time << ", "
+				<< pre_time << ", " << comm_time << ", " << replace_time << ", " << second_time  << " " << istep << " "<< total_comm_steps << std::endl;
+
+		std::cout << "Sent data-blocks per step: ";
+		for (int i = 0; i < istep; i++) {
+			std::cout << nblocks_perstep[i] << " ";
+		}
+		std::cout << std::endl;
 	}
 }
