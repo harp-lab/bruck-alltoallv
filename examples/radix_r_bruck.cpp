@@ -7,7 +7,7 @@
 
 #include "radix_r_bruck.h"
 
-#define ITERATION_COUNT 1
+#define ITERATION_COUNT 20
 
 static int rank, nprocs;
 static void run_radix_r_bruck(int nprocs, int r);
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
 static void run_radix_r_bruck(int nprocs, int r)
 {
-	for (int n = 8; n <= 8; n = n * 2)
+	for (int n = 2; n <= 4096; n = n * 2)
 	{
 		long long* send_buffer = new long long[n*nprocs];
 		for (int i=0; i<n*nprocs; i++)
