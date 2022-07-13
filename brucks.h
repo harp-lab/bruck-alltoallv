@@ -11,6 +11,7 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <math.h>
 
 
 #endif /* BRUCKS_H_ */

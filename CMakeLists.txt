@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.8)
 
 project (BruckVariants)
+set (CMAKE_CXX_STANDARD 11)
 
 message("Configuring MPR with MPI support")
 find_package(MPI REQUIRED)
