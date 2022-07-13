@@ -13,6 +13,6 @@
 #include <chrono>
 #include <math.h>
 #include <cstring>
-
+#include <algorithm>
 
 #endif /* BRUCKS_H_ */
