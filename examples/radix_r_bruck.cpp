@@ -8,7 +8,7 @@
 #include "radix_r_bruck.h"
 #include <typeinfo>
 
-#define ITERATION_COUNT 200
+#define ITERATION_COUNT 100
 
 static int rank, nprocs;
 static void run_radix_r_bruck(int nprocs, std::vector<int> bases);

@@ -133,7 +133,7 @@ void uniform_radix_r_bruck(double timelist[][7], int it, int r, char *sendbuf, i
 	timelist[it][6] = second_time;
 
 
-	if (it % 200 == 0 && rank == 0 && sendcount == 2) {
+	if (it % 100 == 0 && rank == 0 && sendcount == 2) {
 		std::cout << "UniformRbruck-Metadata: " << nprocs << " " << sendcount << " " << r << " " << istep << " " << total_comm_steps << " [ ";
 
 		for (int i = 0; i < istep; i++) {
@@ -151,4 +151,32 @@ void uniform_radix_r_bruck(double timelist[][7], int it, int r, char *sendbuf, i
 //
 
 //	}
+}
+
+
+void uniform_norotation_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
+{
+    int rank, nprocs;
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &nprocs);
+
+    int typesize;
+    MPI_Type_size(sendtype, &typesize);
+
+    int unit_size = sendcount * typesize;
+    int w = ceil(log(nprocs) / log(r)); // calculate the number of digits when using r-representation
+	int nlpow = pow(r, w-1);
+	int d = (pow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
+
+	// convert rank to base r representation
+    int* rank_r_reps = (int*) malloc(nprocs * w * sizeof(int));
+	for (int i = 0; i < nprocs; i++) {
+		std::vector<int> r_rep = convert10tob(w, i, r);
+		std::memcpy(&rank_r_reps[i*w], r_rep.data(), w*sizeof(int));
+	}
+
+	int sent_blocks[nlpow];
+	int di = 0;
+
+	free(rank_r_reps);
 }
