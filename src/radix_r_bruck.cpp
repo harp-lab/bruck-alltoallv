@@ -133,7 +133,7 @@ void uniform_radix_r_bruck(double timelist[][7], int it, int r, char *sendbuf, i
 	timelist[it][6] = second_time;
 
 
-	if (it % 40 == 0 && rank == 0 && sendcount == 2) {
+	if (it % 200 == 0 && rank == 0 && sendcount == 2) {
 		std::cout << "UniformRbruck-Metadata: " << nprocs << " " << sendcount << " " << r << " " << istep << " " << total_comm_steps << " [ ";
 
 		for (int i = 0; i < istep; i++) {
