@@ -134,13 +134,12 @@ void uniform_radix_r_bruck(double timelist[][7], int it, int r, char *sendbuf, i
 
 
 	if (it % 20 == 0 && rank == 0 && sendcount == 2) {
-		std::cout << "UniformRbruck-Metadata: " << nprocs << " " << sendcount << " " << r << " " << istep << " " << total_comm_steps << std::endl;
+		std::cout << "UniformRbruck-Metadata: " << nprocs << " " << sendcount << " " << r << " " << istep << " " << total_comm_steps << " [ ";
 
-		std::cout << "UniformRbruck-SentDBpstep: ";
 		for (int i = 0; i < istep; i++) {
 			std::cout << nblocks_perstep[i] << " ";
 		}
-		std::cout << std::endl;
+		std::cout << "]" << std::endl;
 	}
 			//[total_time, first_time, conv_time, pre_time, comm_time, replace_time, second_time];
 //	MPI_Allreduce(&total_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, comm);
