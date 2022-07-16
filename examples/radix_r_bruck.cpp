@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     // MPI Initial
     if (MPI_Init(&argc, &argv) != MPI_SUCCESS)
         std::cout << "ERROR: MPI_Init error\n" << std::endl;
-    if (MPI_Comm_size(MPI_COMM_WORLD, &nprocs) != MPI_SUCCESS)s
+    if (MPI_Comm_size(MPI_COMM_WORLD, &nprocs) != MPI_SUCCESS)
     	std::cout << "ERROR: MPI_Comm_size error\n" << std::endl;
     if (MPI_Comm_rank(MPI_COMM_WORLD, &rank) != MPI_SUCCESS)
     	std::cout << "ERROR: MPI_Comm_rank error\n" << std::endl;
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 {
 	int basecount = bases.size();
-	for (int n = 2; n <= 2048; n = n * 2)
+	for (int n = 1; n <= 1; n = n * 2)
 	{
 		long long* send_buffer = new long long[n*nprocs];
 		long long* recv_buffer = new long long[n*nprocs];
@@ -72,17 +72,22 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 				}
 				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
 
-				double st = MPI_Wtime();
+//				double st = MPI_Wtime();
 				uniform_radix_r_bruck(bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-				double et = MPI_Wtime();
-				total_times[i*ITERATION_COUNT + it] = et - st;
+//				double et = MPI_Wtime();
+//				total_times[i*ITERATION_COUNT + it] = et - st;
 
-				// check if correct
-				for (int i =  0; i < n*nprocs; i++) {
-					if (recv_buffer[i] % 10 != rank) {
-						std::cout << "EROOR VALUE: " << rank << " " << i << " " << recv_buffer[i] << std::endl;
-					}
+				for (int d = 0; d < n*nprocs; d++) {
+					if ( (recv_buffer[d] % 10) != (rank % 10) )
+						std::cout << rank << " " << d << recv_buffer[d] << std::endl;
 				}
+
+//				// check if correct
+//				for (int j =  0; j < n*nprocs; j++) {
+//					if (recv_buffer[j] % 10 != rank) {
+//						std::cout << "EROOR VALUE: " << rank << " " << j << " " << recv_buffer[j] << std::endl;
+//					}
+//				}
 			}
 		}
 
