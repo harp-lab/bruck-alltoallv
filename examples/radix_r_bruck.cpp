@@ -48,6 +48,12 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 
 		// MPI alltoall
 		for (int it=0; it < ITERATION_COUNT; it++) {
+
+			for (int p=0; p<n*nprocs; p++) {
+				long long value = p/n + rank * 10;
+				send_buffer[p] = value;
+			}
+
 			MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
 		}
 
@@ -60,9 +66,9 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 		for (int i = 0; i < basecount; i++) {
 			for (int it=0; it < ITERATION_COUNT; it++) {
 
-				for (int i=0; i<n*nprocs; i++) {
-					long long value = i/n + rank * 10;
-					send_buffer[i] = value;
+				for (int p=0; p<n*nprocs; p++) {
+					long long value = p/n + rank * 10;
+					send_buffer[p] = value;
 				}
 				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
 
@@ -99,9 +105,9 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 		for (int i = 0; i < basecount; i++) {
 			for (int it=0; it < ITERATION_COUNT; it++) {
 
-				for (int i=0; i<n*nprocs; i++) {
-					long long value = i/n + rank * 10;
-					send_buffer[i] = value;
+				for (int p=0; p<n*nprocs; p++) {
+					long long value = p/n + rank * 10;
+					send_buffer[p] = value;
 				}
 				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
 
@@ -138,9 +144,9 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 		for (int i = 0; i < basecount; i++) {
 			for (int it=0; it < ITERATION_COUNT; it++) {
 
-				for (int i=0; i<n*nprocs; i++) {
-					long long value = i/n + rank * 10;
-					send_buffer[i] = value;
+				for (int p=0; p<n*nprocs; p++) {
+					long long value = p/n + rank * 10;
+					send_buffer[p] = value;
 				}
 				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
 
