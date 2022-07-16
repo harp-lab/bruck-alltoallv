@@ -77,10 +77,17 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 //				double et = MPI_Wtime();
 //				total_times[i*ITERATION_COUNT + it] = et - st;
 
-				for (int d = 0; d < n*nprocs; d++) {
-					if ( (recv_buffer[d] % 10) != (rank % 10) )
-						std::cout << rank << " " << d << recv_buffer[d] << std::endl;
+				if (rank == 11) {
+					for (int d = 0; d < n*nprocs; d++) {
+						std::cout << recv_buffer[d] << " ";
+					}
+					std::cout << std::endl;
 				}
+
+//				for (int d = 0; d < n*nprocs; d++) {
+//					if ( (recv_buffer[d] % 10) != (rank % 10) )
+//						std::cout << rank << " " << d << recv_buffer[d] << std::endl;
+//				}
 
 //				// check if correct
 //				for (int j =  0; j < n*nprocs; j++) {
