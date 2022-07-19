@@ -19,7 +19,7 @@ std::vector<int> convert10tob(int w, int N, int b)
 	return v;
 }
 
-void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
+void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
 {
     int rank, nprocs;
     MPI_Comm_rank(comm, &rank);
@@ -50,7 +50,7 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 
 	int comm_steps = (r - 1)*w - d;
 //	int nblocks_perstep[comm_steps];
-//	int total_comm_steps = 0;
+	int total_comm_steps = 0;
 //	int istep = 0;
 
 	char* temp_buffer = (char*)malloc(nlpow * unit_size); // temporary buffer
@@ -71,6 +71,7 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
     				memcpy(&temp_buffer[unit_size*ci++], &recvbuf[i*unit_size], unit_size);
     			}
     		}
+    		act_sd_pstep.push_back(di);
 //    		nblocks_perstep[istep++] = di;
 //    		total_comm_steps += di;
 //    		e = MPI_Wtime();
@@ -112,25 +113,15 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 //	e = MPI_Wtime();
 //	double second_time = e - s;
 
-//    double te = MPI_Wtime();
-//	double total_time = te - ts;
-
-//	timelist[it][0] = total_time;
-//	timelist[it][1] = first_time;
-//	timelist[it][2] = conv_time;
-//	timelist[it][3] = pre_time;
-//	timelist[it][4] = comm_time;
-//	timelist[it][5] = replace_time;
-//	timelist[it][6] = second_time;
+//	if (rank == 0) {
 //
 //
-//	if (it % 100 == 0 && rank == 0 && sendcount == 2) {
-//		std::cout << "UniformRbruck-Metadata: " << nprocs << " " << sendcount << " " << r << " " << istep << " " << total_comm_steps << " [ ";
-//
-//		for (int i = 0; i < istep; i++) {
-//			std::cout << nblocks_perstep[i] << " ";
-//		}
-//		std::cout << "]" << std::endl;
+////		std::cout << "ACTU: " << nprocs << " " << r << " " << istep << " [ ";
+////
+////		for (int i = 0; i < istep; i++) {
+////			std::cout << nblocks_perstep[i] << " ";
+////		}
+////		std::cout << "] " << total_comm_steps << std::endl;
 //	}
 
 }

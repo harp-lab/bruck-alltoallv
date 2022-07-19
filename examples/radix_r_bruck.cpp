@@ -8,10 +8,13 @@
 #include "radix_r_bruck.h"
 #include <typeinfo>
 
-#define ITERATION_COUNT 100
+#define ITERATION_COUNT 1
 
 static int rank, nprocs;
-static void run_radix_r_bruck(int nprocs, std::vector<int> bases);
+
+static void calculate_commsteps_and_datablock_counts(int r, std::vector<int>& the_sd_pstep);
+static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep);
+
 
 int main(int argc, char **argv)
 {
@@ -32,200 +35,100 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; i++)
     	bases.push_back(atoi(argv[i]));
 
-    run_radix_r_bruck(nprocs, bases);
+    for ( int r = 2; r < nprocs; r++) {
+
+    	std::vector<int> the_sd_pstep;
+        std::vector<int> act_sd_pstep;
+
+    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
+    	run_radix_r_bruck(nprocs, r, act_sd_pstep);
+
+    	if (rank == 0) {
+    		if (the_sd_pstep.size() !=  act_sd_pstep.size()) {
+    			std::cout << "ERROR: Incorrect formulas!" << std::endl;
+    		}
+    		else {
+    			std::cout << nprocs << " " << r << " " <<the_sd_pstep.size() << " [";
+    			int total_dc = 0;
+    			for (int s = 0; s < the_sd_pstep.size(); s++) {
+    				if (the_sd_pstep[s] != act_sd_pstep[s])
+    					std::cout << "ERROR: Incorrect formulas: " << s << ", (THE) " << the_sd_pstep[s] << ", (ACT) " << act_sd_pstep[s] << std::endl;
+    				else {
+    					std::cout << act_sd_pstep[s] << " ";
+    					total_dc += act_sd_pstep[s];
+    				}
+    			}
+				std::cout << "]" << total_dc << std::endl;
+    		}
+    	}
+    }
 
 	MPI_Finalize();
     return 0;
 }
 
-static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
+static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep)
 {
-	int basecount = bases.size();
-	for (int n = 2; n <= 1024; n = n * 2)
+	for (int n = 2; n <= 2; n = n * 2)
 	{
 		long long* send_buffer = new long long[n*nprocs];
 		long long* recv_buffer = new long long[n*nprocs];
 
-		// MPI alltoall
 		for (int it=0; it < ITERATION_COUNT; it++) {
 
 			for (int p=0; p<n*nprocs; p++) {
 				long long value = p/n + rank * 10;
 				send_buffer[p] = value;
 			}
+			memset(recv_buffer, 0, n*nprocs*sizeof(long long));
 
-			MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-		}
+			uniform_radix_r_bruck(act_sd_pstep, r, (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
 
-		MPI_Barrier(MPI_COMM_WORLD);
-		if (rank == 0)
-			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
-
-		double total_times[ITERATION_COUNT*basecount];
-		memset(&total_times, 0, ITERATION_COUNT*basecount*sizeof(double));
-		for (int i = 0; i < basecount; i++) {
-			for (int it=0; it < ITERATION_COUNT; it++) {
-
-				for (int p=0; p<n*nprocs; p++) {
-					long long value = p/n + rank * 10;
-					send_buffer[p] = value;
-				}
-				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
-
-				double st = MPI_Wtime();
-				uniform_radix_r_bruck(bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-				double et = MPI_Wtime();
-				total_times[i*ITERATION_COUNT + it] = et - st;
-
-				// check if correct
-				for (int d = 0; d < n*nprocs; d++) {
-					if ( (recv_buffer[d] % 10) != (rank % 10) )
-						std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
-				}
-
+			// check if correct
+			for (int d = 0; d < n*nprocs; d++) {
+				if ( (recv_buffer[d] % 10) != (rank % 10) )
+					std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
 			}
+
 		}
 
-		for (int i = 0; i < basecount; i++) {
-			for (int it=0; it < ITERATION_COUNT; it++) {
-				double max_time = 0;
-				MPI_Allreduce(&total_times[i*ITERATION_COUNT + it], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-
-				if (total_times[i*ITERATION_COUNT + it] == max_time)
-					std::cout << "[UniformRbruck] " << nprocs << ", " << n << ", " << bases[i] << ", " << max_time << std::endl;
-			}
-		}
-
-		MPI_Barrier(MPI_COMM_WORLD);
-		if (rank == 0)
-			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
-
-
-		memset(&total_times, 0, ITERATION_COUNT*basecount*sizeof(double));
-		for (int i = 0; i < basecount; i++) {
-			for (int it=0; it < ITERATION_COUNT; it++) {
-
-				for (int p=0; p<n*nprocs; p++) {
-					long long value = p/n + rank * 10;
-					send_buffer[p] = value;
-				}
-				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
-
-				double st = MPI_Wtime();
-				uniform_norotation_radix_r_bruck(bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-				double et = MPI_Wtime();
-				total_times[i*ITERATION_COUNT + it] = et - st;
-
-				// check if correct
-				for (int d = 0; d < n*nprocs; d++) {
-					if ( (recv_buffer[d] % 10) != (rank % 10) )
-						std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
-				}
-			}
-		}
-
-		for (int i = 0; i < basecount; i++) {
-			for (int it=0; it < ITERATION_COUNT; it++) {
-				double max_time = 0;
-				MPI_Allreduce(&total_times[i*ITERATION_COUNT + it], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-
-				if (total_times[i*ITERATION_COUNT + it] == max_time)
-					std::cout << "[UniformZeroRoRbruck] " << nprocs << ", " << n << ", " << bases[i] << ", " << max_time << std::endl;
-			}
-		}
-
-
-		MPI_Barrier(MPI_COMM_WORLD);
-		if (rank == 0)
-			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
-
-		memset(&total_times, 0, ITERATION_COUNT*basecount*sizeof(double));
-		for (int i = 0; i < basecount; i++) {
-			for (int it=0; it < ITERATION_COUNT; it++) {
-
-				for (int p=0; p<n*nprocs; p++) {
-					long long value = p/n + rank * 10;
-					send_buffer[p] = value;
-				}
-				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
-
-				double st = MPI_Wtime();
-				uniform_norotation_radix_r_bruck_dt(bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-				double et = MPI_Wtime();
-				total_times[i*ITERATION_COUNT + it] = et - st;
-
-				// check if correct
-				for (int d = 0; d < n*nprocs; d++) {
-					if ( (recv_buffer[d] % 10) != (rank % 10) )
-						std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
-				}
-
-			}
-		}
-
-		for (int i = 0; i < basecount; i++) {
-			for (int it=0; it < ITERATION_COUNT; it++) {
-				double max_time = 0;
-				MPI_Allreduce(&total_times[i*ITERATION_COUNT + it], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-
-				if (total_times[i*ITERATION_COUNT + it] == max_time)
-					std::cout << "[UniformZeroRoRbruckDT] " << nprocs << ", " << n << ", " << bases[i] << ", " << max_time << std::endl;
-			}
-		}
-
-
-//
-//		MPI_Barrier(MPI_COMM_WORLD);
-//		if (rank == 0)
-//			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
-//
-//		// radix-r bruck
-//		double total_time_lists[ITERATION_COUNT*basecount][7];
-//		for (int i = 0; i < basecount; i++) {
-//			for (int it=0; it < ITERATION_COUNT; it++) {
-//				uniform_radix_r_bruck(total_time_lists, i*ITERATION_COUNT+it, bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-//			}
-//		}
-//
-//		for (int i = 0; i < basecount; i++) {
-//			for (int it=0; it < ITERATION_COUNT; it++) {
-//				double max_time = 0;
-//				MPI_Allreduce(&total_time_lists[i*ITERATION_COUNT + it][0], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-//
-//				if (total_time_lists[i*ITERATION_COUNT + it][0] == max_time) {
-//					std::cout << "[UniformRbruck] " << nprocs << ", " << n << ", " << bases[i] << ", ";
-//					for (int t = 0; t < 7; t++)
-//						std::cout << total_time_lists[i*ITERATION_COUNT + it][t] << ", ";
-//					std::cout << std::endl;
-//				}
-//			}
-//		}
-//
-//
-//		MPI_Barrier(MPI_COMM_WORLD);
-//		if (rank == 0)
-//			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
-//
-//
-//		double total_times[ITERATION_COUNT];
-//		for (int it=0; it < ITERATION_COUNT; it++) {
-//			double comm_start = MPI_Wtime();
-//			MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-//			double comm_end = MPI_Wtime();
-//			total_times[it] = comm_end - comm_start;
-//		}
-//
-//		for (int it=0; it < ITERATION_COUNT; it++) {
-//			double max_time = 0;
-//			MPI_Allreduce(&total_times[it], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-//			if (total_times[it] == max_time)
-//				std::cout << "[MPIAlltoall] " << nprocs << ", " << n << ", " <<  max_time << std::endl;
-//		}
 
 		delete[] send_buffer;
 		delete[] recv_buffer;
 	}
 
+}
+
+
+static void calculate_commsteps_and_datablock_counts(int r, std::vector<int>& the_sd_pstep) {
+
+    int rank, nprocs;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+
+	int w = ceil(log(nprocs) / log(r)); // calculate the number of digits when using r-representation
+	int nlpow = pow(r, w-1);
+	int d = (pow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
+
+	for (int x = 0; x < w; x++) {
+		int ze = (x == w - 1)? r - d: r;
+		for (int z = 1; z < ze; z++) {
+
+			int xhpow = pow(r, x+1);
+			int xpow = pow(r, x);
+			int div = floor(nprocs / xhpow );
+			int re = nprocs % xhpow;
+			int t  = re - z * xpow;
+
+			int dc = div * xpow; // number of sent data-blocks per step
+			if (t > 0) {
+				if (t / xpow > 0) { dc += xpow; }
+				else { dc += t % xpow; }
+			}
+
+			the_sd_pstep.push_back(dc);
+		}
+	}
 }
 
 
