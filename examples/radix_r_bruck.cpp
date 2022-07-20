@@ -40,27 +40,27 @@ int main(int argc, char **argv)
     	std::vector<int> the_sd_pstep;
         std::vector<int> act_sd_pstep;
 
-    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
+//    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
     	run_radix_r_bruck(nprocs, r, act_sd_pstep);
 
-    	if (rank == 0) {
-    		if (the_sd_pstep.size() !=  act_sd_pstep.size()) {
-    			std::cout << "ERROR: Incorrect formulas!" << std::endl;
-    		}
-    		else {
-    			std::cout << nprocs << " " << r << " " <<the_sd_pstep.size() << " [";
-    			int total_dc = 0;
-    			for (int s = 0; s < the_sd_pstep.size(); s++) {
-    				if (the_sd_pstep[s] != act_sd_pstep[s])
-    					std::cout << "ERROR: Incorrect formulas: " << s << ", (THE) " << the_sd_pstep[s] << ", (ACT) " << act_sd_pstep[s] << std::endl;
-    				else {
-    					std::cout << act_sd_pstep[s] << " ";
-    					total_dc += act_sd_pstep[s];
-    				}
-    			}
-				std::cout << "]" << total_dc << std::endl;
-    		}
-    	}
+//    	if (rank == 0) {
+//    		if (the_sd_pstep.size() !=  act_sd_pstep.size()) {
+//    			std::cout << "ERROR: Incorrect formulas!" << std::endl;
+//    		}
+//    		else {
+//    			std::cout << nprocs << " " << r << " " <<the_sd_pstep.size() << " [";
+//    			int total_dc = 0;
+//    			for (int s = 0; s < the_sd_pstep.size(); s++) {
+//    				if (the_sd_pstep[s] != act_sd_pstep[s])
+//    					std::cout << "ERROR: Incorrect formulas: " << s << ", (THE) " << the_sd_pstep[s] << ", (ACT) " << act_sd_pstep[s] << std::endl;
+//    				else {
+//    					std::cout << act_sd_pstep[s] << " ";
+//    					total_dc += act_sd_pstep[s];
+//    				}
+//    			}
+//				std::cout << "]" << total_dc << std::endl;
+//    		}
+//    	}
     }
 
 	MPI_Finalize();
@@ -87,11 +87,10 @@ static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep)
 			// check if correct
 			for (int d = 0; d < n*nprocs; d++) {
 				if ( (recv_buffer[d] % 10) != (rank % 10) )
-					std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
+					std::cout << "EROOR VALUE: " << rank << " " << r << " " << d << " " << recv_buffer[d] << std::endl;
 			}
 
 		}
-
 
 		delete[] send_buffer;
 		delete[] recv_buffer;
