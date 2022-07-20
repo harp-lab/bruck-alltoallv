@@ -85,9 +85,21 @@ static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep)
 			uniform_radix_r_bruck(act_sd_pstep, r, (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
 
 			// check if correct
-			for (int d = 0; d < n*nprocs; d++) {
-				if ( (recv_buffer[d] % 10) != (rank % 10) )
-					std::cout << "EROOR VALUE: " << rank << " " << r << " " << d << " " << recv_buffer[d] << std::endl;
+			if (rank == 0){
+				int error = 0;
+				for (int d = 0; d < n*nprocs; d++) {
+					if ( (recv_buffer[d] % 10) != (rank % 10) ) {
+						error += 1;
+//						std::cout << "EROOR VALUE: " << rank << " " << r << " " << d << " " << recv_buffer[d] << std::endl;
+					}
+				}
+				if (error > 0) {
+					std::cout << "R ERROR " << r << " " << error << std::endl;
+					for (int d = 0; d < n*nprocs; d++) {
+						std::cout << recv_buffer[d] << " ";
+					}
+					std::cout << std::endl;
+				}
 			}
 
 		}
