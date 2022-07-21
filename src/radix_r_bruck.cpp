@@ -83,6 +83,24 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     				memcpy(&temp_buffer[unit_size*ci++], &recvbuf[i*unit_size], unit_size);
     			}
     		}
+
+		    if (rank == 461) {
+				std::cout << "[" << x << " " << z << "], "
+						<< "Send data-blocks (" << di << " [ ";
+				for (int i = 0; i < di; i++) {
+					std::cout << sent_blocks[i] << " ";
+
+				}
+				std::cout << "])" << std::endl;
+
+				for (int i = 0; i < di; i++) {
+					long long value = 0;
+					memcpy(&value, temp_buffer+(i*unit_size), unit_size);
+					std::cout << value << " ";
+				}
+				std::cout << std::endl;
+			}
+
 //    		act_sd_pstep.push_back(di);
 
 //    		if (rank == 0) {
@@ -123,21 +141,21 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 					memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
 				}
 
-			    if (rank == 461) {
-			    	std::cout << "After Comm [" << x << " " << z << "], "
-			    			<< "Send data-blocks (" << di << " [ ";
-					for (int i = 0; i < di; i++) {
-						std::cout << sent_blocks[i] << " ";
-					}
-					std::cout << "])" << std::endl;
-
-			    	for (int i = 0; i < nprocs; i++) {
-			    		long long value = 0;
-			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
-			    		std::cout << value << " ";
-			    	}
-			    	std::cout << std::endl;
-			    }
+//			    if (rank == 461) {
+//			    	std::cout << "After Comm [" << x << " " << z << "], "
+//			    			<< "Send data-blocks (" << di << " [ ";
+//					for (int i = 0; i < di; i++) {
+//						std::cout << sent_blocks[i] << " ";
+//					}
+//					std::cout << "])" << std::endl;
+//
+//			    	for (int i = 0; i < nprocs; i++) {
+//			    		long long value = 0;
+//			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
+//			    		std::cout << value << " ";
+//			    	}
+//			    	std::cout << std::endl;
+//			    }
 //    		}
 //    		e = MPI_Wtime();
 //    		replace_time += e - s;

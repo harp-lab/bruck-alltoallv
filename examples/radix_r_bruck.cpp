@@ -96,10 +96,10 @@ static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep)
 				}
 				if (error > 0) {
 					std::cout << "R ERROR " << r << " " << error << std::endl;
-					for (int d = 0; d < n*nprocs; d++) {
-						std::cout << recv_buffer[d] << " ";
-					}
-					std::cout << std::endl;
+//					for (int d = 0; d < n*nprocs; d++) {
+//						std::cout << recv_buffer[d] << " ";
+//					}
+//					std::cout << std::endl;
 				}
 			}
 
