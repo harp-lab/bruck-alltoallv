@@ -35,34 +35,34 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; i++)
     	bases.push_back(atoi(argv[i]));
 
-//    for ( int r = 2; r < nprocs; r++) {
+    for ( int r = 2; r < nprocs; r++) {
 
     	std::vector<int> the_sd_pstep;
         std::vector<int> act_sd_pstep;
 
-//    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
+    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
 //        int r = 51;
-    	run_radix_r_bruck(nprocs, bases[0], act_sd_pstep);
+    	run_radix_r_bruck(nprocs, r, act_sd_pstep);
 
-//    	if (rank == 0) {
-//    		if (the_sd_pstep.size() !=  act_sd_pstep.size()) {
-//    			std::cout << "ERROR: Incorrect formulas!" << std::endl;
-//    		}
-//    		else {
-//    			std::cout << nprocs << " " << r << " " <<the_sd_pstep.size() << " [";
-//    			int total_dc = 0;
-//    			for (int s = 0; s < the_sd_pstep.size(); s++) {
-//    				if (the_sd_pstep[s] != act_sd_pstep[s])
-//    					std::cout << "ERROR: Incorrect formulas: " << s << ", (THE) " << the_sd_pstep[s] << ", (ACT) " << act_sd_pstep[s] << std::endl;
-//    				else {
-//    					std::cout << act_sd_pstep[s] << " ";
-//    					total_dc += act_sd_pstep[s];
-//    				}
-//    			}
-//				std::cout << "]" << total_dc << std::endl;
-//    		}
-//    	}
-//    }
+    	if (rank == 0) {
+    		if (the_sd_pstep.size() !=  act_sd_pstep.size()) {
+    			std::cout << "ERROR: Incorrect formulas!" << std::endl;
+    		}
+    		else {
+    			std::cout << nprocs << " " << r << " " <<the_sd_pstep.size() << " [";
+    			int total_dc = 0;
+    			for (int s = 0; s < the_sd_pstep.size(); s++) {
+    				if (the_sd_pstep[s] != act_sd_pstep[s])
+    					std::cout << "ERROR: Incorrect formulas: " << s << ", (THE) " << the_sd_pstep[s] << ", (ACT) " << act_sd_pstep[s] << std::endl;
+    				else {
+    					std::cout << act_sd_pstep[s] << " ";
+    					total_dc += act_sd_pstep[s];
+    				}
+    			}
+				std::cout << "] " << total_dc << std::endl;
+    		}
+    	}
+    }
 
 	MPI_Finalize();
     return 0;
@@ -100,9 +100,6 @@ static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep)
 //						std::cout << recv_buffer[d] << " ";
 //					}
 //					std::cout << std::endl;
-				}
-				else {
-					std::cout << "R Correct " << r << std::endl;
 				}
 			}
 
