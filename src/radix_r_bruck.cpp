@@ -58,8 +58,8 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 	// communication steps = (r - 1)w - d
 	double pre_time = 0, comm_time = 0, replace_time = 0;
     for (int x = 0; x < w; x++) {
-    	int ze = (x == w - 1)? r - d: r;
-    	for (int z = 1; z < ze; z++) {
+//    	int ze = (x == w - 1)? r - d: r;
+    	for (int z = 1; z < r; z++) {
 
     		// get the sent data-blocks
     		// copy blocks which need to be sent at this step
@@ -72,6 +72,9 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     			}
     		}
     		act_sd_pstep.push_back(di);
+
+//    		if (rank == 0 && di > 0)
+//    			std::cout << r << " " << x << " "<< z << " " << di << "\n";
 //    		nblocks_perstep[istep++] = di;
 //    		total_comm_steps += di;
 //    		e = MPI_Wtime();
@@ -79,20 +82,22 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 
     		// send and receive
 //    		s = MPI_Wtime();
-    		int distance = z * pow(r, x);
-    		int recv_proc = (rank - distance + nprocs) % nprocs; // receive data from rank - 2^step process
-    		int send_proc = (rank + distance) % nprocs; // send data from rank + 2^k process
-    		long long comm_size = di * unit_size;
-    		MPI_Sendrecv(temp_buffer, comm_size, MPI_CHAR, send_proc, 0, sendbuf, comm_size, MPI_CHAR, recv_proc, 0, comm, MPI_STATUS_IGNORE);
+    		if (di > 0){
+				int distance = z * pow(r, x);
+				int recv_proc = (rank - distance + nprocs) % nprocs; // receive data from rank - 2^step process
+				int send_proc = (rank + distance) % nprocs; // send data from rank + 2^k process
+				long long comm_size = di * unit_size;
+				MPI_Sendrecv(temp_buffer, comm_size, MPI_CHAR, send_proc, 0, sendbuf, comm_size, MPI_CHAR, recv_proc, 0, comm, MPI_STATUS_IGNORE);
 //    		e = MPI_Wtime();
 //    		comm_time += e - s;
 
 //    		s = MPI_Wtime();
-    		// replace with received data
-    		for (int i = 0; i < di; i++)
-    		{
-    			long long offset = sent_blocks[i] * unit_size;
-    			memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
+				// replace with received data
+				for (int i = 0; i < di; i++)
+				{
+					long long offset = sent_blocks[i] * unit_size;
+					memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
+				}
     		}
 //    		e = MPI_Wtime();
 //    		replace_time += e - s;

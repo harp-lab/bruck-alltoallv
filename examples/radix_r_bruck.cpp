@@ -40,7 +40,8 @@ int main(int argc, char **argv)
     	std::vector<int> the_sd_pstep;
         std::vector<int> act_sd_pstep;
 
-//    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
+    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
+//        int r = 3;
     	run_radix_r_bruck(nprocs, r, act_sd_pstep);
 
 //    	if (rank == 0) {
