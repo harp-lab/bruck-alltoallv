@@ -24,7 +24,7 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     int rank, nprocs;
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &nprocs);
-
+//    nprocs = 512;
 
     int typesize;
     MPI_Type_size(sendtype, &typesize);
@@ -37,8 +37,18 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     // local rotation
     std::memcpy(recvbuf, &sendbuf[rank*unit_size], (nprocs - rank)*unit_size);
     std::memcpy(&recvbuf[(nprocs - rank)*unit_size], sendbuf, rank*unit_size);
-
+//
     if (rank == 0) {
+    	std::cout << "After Rotation: ";
+    	for (int i = 0; i < nprocs; i++) {
+    		long long value = 0;
+    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
+    		std::cout << value << " ";
+    	}
+    	std::cout << std::endl;
+    }
+
+    if (rank == 461) {
     	std::cout << "After Rotation: ";
     	for (int i = 0; i < nprocs; i++) {
     		long long value = 0;
@@ -105,6 +115,11 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 				int distance = z * pow(r, x);
 				int recv_proc = (rank - distance + nprocs) % nprocs; // receive data from rank - 2^step process
 				int send_proc = (rank + distance) % nprocs; // send data from rank + 2^k process
+
+//				if (rank == 0) {
+//					std::cout << "["<< x << " " << z << "] " << send_proc << " " << recv_proc << std::endl;
+//				}
+
 				long long comm_size = di * unit_size;
 				MPI_Sendrecv(temp_buffer, comm_size, MPI_CHAR, send_proc, 0, sendbuf, comm_size, MPI_CHAR, recv_proc, 0, comm, MPI_STATUS_IGNORE);
 //    		e = MPI_Wtime();
@@ -126,6 +141,15 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 					}
 					std::cout << "])" << std::endl;
 
+			    	for (int i = 0; i < nprocs; i++) {
+			    		long long value = 0;
+			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
+			    		std::cout << value << " ";
+			    	}
+			    	std::cout << std::endl;
+			    }
+
+			    if (rank == 461) {
 			    	for (int i = 0; i < nprocs; i++) {
 			    		long long value = 0;
 			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
