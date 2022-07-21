@@ -7,8 +7,7 @@
 
 #include "radix_r_bruck.h"
 
-std::vector<int> convert10tob(int w, int N, int b)
-{
+std::vector<int> convert10tob(int w, int N, int b) {
 	std::vector<int> v(w);
 	int i = 0;
 	while(N) {
@@ -17,6 +16,15 @@ std::vector<int> convert10tob(int w, int N, int b)
 	}
 //	std::reverse(v.begin(), v.end());
 	return v;
+}
+
+int myPow(int x, unsigned int p) {
+  if (p == 0) return 1;
+  if (p == 1) return x;
+
+  int tmp = myPow(x, p/2);
+  if (p%2 == 0) return tmp * tmp;
+  else return x * tmp * tmp;
 }
 
 void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
@@ -109,7 +117,8 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 //    		e = MPI_Wtime();
 //    		pre_time += e - s;
 
-    		int distance = (int)z * pow(r, x);
+//    		int distance = (int)z * pow(r, x);
+    		int distance = z * myPow(r, x);
     		if (rank == 0)
     			std::cout << x << " " << z << " " << distance << " " << pow(r, x) << " " << pow(static_cast<float>(r), static_cast<float>(x)) << std::endl;
 
