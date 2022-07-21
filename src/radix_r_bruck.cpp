@@ -38,16 +38,6 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     std::memcpy(recvbuf, &sendbuf[rank*unit_size], (nprocs - rank)*unit_size);
     std::memcpy(&recvbuf[(nprocs - rank)*unit_size], sendbuf, rank*unit_size);
 //
-    if (rank == 0) {
-    	std::cout << "After Rotation: ";
-    	for (int i = 0; i < nprocs; i++) {
-    		long long value = 0;
-    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
-    		std::cout << value << " ";
-    	}
-    	std::cout << std::endl;
-    }
-
     if (rank == 461) {
     	std::cout << "After Rotation: ";
     	for (int i = 0; i < nprocs; i++) {
@@ -133,7 +123,7 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 					memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
 				}
 
-			    if (rank == 0) {
+			    if (rank == 461) {
 			    	std::cout << "After Comm [" << x << " " << z << "], "
 			    			<< "Send data-blocks (" << di << " [ ";
 					for (int i = 0; i < di; i++) {
@@ -141,15 +131,6 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 					}
 					std::cout << "])" << std::endl;
 
-			    	for (int i = 0; i < nprocs; i++) {
-			    		long long value = 0;
-			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
-			    		std::cout << value << " ";
-			    	}
-			    	std::cout << std::endl;
-			    }
-
-			    if (rank == 461) {
 			    	for (int i = 0; i < nprocs; i++) {
 			    		long long value = 0;
 			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
