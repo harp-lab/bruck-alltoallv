@@ -109,8 +109,9 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 //    		e = MPI_Wtime();
 //    		pre_time += e - s;
 
+    		int distance = z * pow(r, x);
     		if (rank == 0)
-    			std::cout << x << " " << z << " " << pow(r, x) << " " << pow(static_cast<float>(r), static_cast<float>(x)) << std::endl;
+    			std::cout << x << " " << z << " " << distance << " " << pow(r, x) << " " << pow(static_cast<float>(r), static_cast<float>(x)) << std::endl;
 
 //    		 send and receive
 //    		s = MPI_Wtime();
