@@ -25,6 +25,7 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     MPI_Comm_rank(comm, &rank);
     MPI_Comm_size(comm, &nprocs);
 
+
     int typesize;
     MPI_Type_size(sendtype, &typesize);
 
@@ -37,12 +38,23 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     std::memcpy(recvbuf, &sendbuf[rank*unit_size], (nprocs - rank)*unit_size);
     std::memcpy(&recvbuf[(nprocs - rank)*unit_size], sendbuf, rank*unit_size);
 
+    if (rank == 0) {
+    	std::cout << "After Rotation: ";
+    	for (int i = 0; i < nprocs; i++) {
+    		long long value = 0;
+    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
+    		std::cout << value << " ";
+    	}
+    	std::cout << std::endl;
+    }
+
     // convert rank to base r representation
     int* rank_r_reps = (int*) malloc(nprocs * w * sizeof(int));
 	for (int i = 0; i < nprocs; i++) {
 		std::vector<int> r_rep = convert10tob(w, i, r);
 		std::memcpy(&rank_r_reps[i*w], r_rep.data(), w*sizeof(int));
 	}
+
 
 	int sent_blocks[nlpow];
 	int di = 0;
@@ -56,10 +68,10 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 	char* temp_buffer = (char*)malloc(nlpow * unit_size); // temporary buffer
 
 	// communication steps = (r - 1)w - d
-	double pre_time = 0, comm_time = 0, replace_time = 0;
+//	double pre_time = 0, comm_time = 0, replace_time = 0;
     for (int x = 0; x < w; x++) {
-//    	int ze = (x == w - 1)? r - d: r;
-    	for (int z = 1; z < r; z++) {
+    	int ze = (x == w - 1)? r - d: r;
+    	for (int z = 1; z < ze; z++) {
 
     		// get the sent data-blocks
     		// copy blocks which need to be sent at this step
@@ -71,7 +83,14 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
     				memcpy(&temp_buffer[unit_size*ci++], &recvbuf[i*unit_size], unit_size);
     			}
     		}
-    		act_sd_pstep.push_back(di);
+//    		act_sd_pstep.push_back(di);
+
+//    		if (rank == 0) {
+//    			std::cout << x << " " << z << " " << di << ": ";
+//    			for (int i = 0; i < di; i++)
+//    				std::cout << sent_blocks[i] << " ";
+//    			std::cout << std::endl;
+//    		}
 
 //    		if (rank == 0 && di > 0)
 //    			std::cout << r << " " << x << " "<< z << " " << di << "\n";
@@ -80,9 +99,9 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 //    		e = MPI_Wtime();
 //    		pre_time += e - s;
 
-    		// send and receive
+//    		 send and receive
 //    		s = MPI_Wtime();
-    		if (di > 0){
+//    		if (di > 0){
 				int distance = z * pow(r, x);
 				int recv_proc = (rank - distance + nprocs) % nprocs; // receive data from rank - 2^step process
 				int send_proc = (rank + distance) % nprocs; // send data from rank + 2^k process
@@ -98,7 +117,23 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 					long long offset = sent_blocks[i] * unit_size;
 					memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
 				}
-    		}
+
+			    if (rank == 0) {
+			    	std::cout << "After Comm [" << x << " " << z << "], "
+			    			<< "Send data-blocks (" << di << " [ ";
+					for (int i = 0; i < di; i++) {
+						std::cout << sent_blocks[i] << " ";
+					}
+					std::cout << "])" << std::endl;
+
+			    	for (int i = 0; i < nprocs; i++) {
+			    		long long value = 0;
+			    		memcpy(&value, recvbuf+(i*unit_size), unit_size);
+			    		std::cout << value << " ";
+			    	}
+			    	std::cout << std::endl;
+			    }
+//    		}
 //    		e = MPI_Wtime();
 //    		replace_time += e - s;
     	}
@@ -109,12 +144,12 @@ void uniform_radix_r_bruck(std::vector<int>& act_sd_pstep, int r, char *sendbuf,
 
     // local rotation
 //    s = MPI_Wtime();
-	for (int i = 0; i < nprocs; i++)
-	{
-		int index = (rank - i + nprocs) % nprocs;
-		memcpy(&sendbuf[index*unit_size], &recvbuf[i*unit_size], unit_size);
-	}
-	memcpy(recvbuf, sendbuf, nprocs*unit_size);
+//	for (int i = 0; i < nprocs; i++)
+//	{
+//		int index = (rank - i + nprocs) % nprocs;
+//		memcpy(&sendbuf[index*unit_size], &recvbuf[i*unit_size], unit_size);
+//	}
+//	memcpy(recvbuf, sendbuf, nprocs*unit_size);
 //	e = MPI_Wtime();
 //	double second_time = e - s;
 

@@ -35,13 +35,13 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; i++)
     	bases.push_back(atoi(argv[i]));
 
-    for ( int r = 2; r < nprocs; r++) {
+//    for ( int r = 2; r < nprocs; r++) {
 
     	std::vector<int> the_sd_pstep;
         std::vector<int> act_sd_pstep;
 
-    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
-//        int r = 3;
+//    	calculate_commsteps_and_datablock_counts(r, the_sd_pstep);
+        int r = 2;
     	run_radix_r_bruck(nprocs, r, act_sd_pstep);
 
 //    	if (rank == 0) {
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 //				std::cout << "]" << total_dc << std::endl;
 //    		}
 //    	}
-    }
+//    }
 
 	MPI_Finalize();
     return 0;
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
 static void run_radix_r_bruck(int nprocs, int r, std::vector<int>& act_sd_pstep)
 {
-	for (int n = 2; n <= 2; n = n * 2)
+	for (int n = 1; n <= 1; n = n * 2)
 	{
 		long long* send_buffer = new long long[n*nprocs];
 		long long* recv_buffer = new long long[n*nprocs];
