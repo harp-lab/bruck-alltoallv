@@ -19,6 +19,16 @@ std::vector<int> convert10tob(int w, int N, int b)
 	return v;
 }
 
+
+int myPow(int x, unsigned int p) {
+  if (p == 0) return 1;
+  if (p == 1) return x;
+
+  int tmp = myPow(x, p/2);
+  if (p%2 == 0) return tmp * tmp;
+  else return x * tmp * tmp;
+}
+
 void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
 {
     int rank, nprocs;
@@ -30,8 +40,8 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 
     int unit_size = sendcount * typesize;
     int w = ceil(log(nprocs) / log(r)); // calculate the number of digits when using r-representation
-	int nlpow = pow(r, w-1);
-	int d = (pow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
+	int nlpow = myPow(r, w-1);
+	int d = (myPow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
 
     // local rotation
     std::memcpy(recvbuf, &sendbuf[rank*unit_size], (nprocs - rank)*unit_size);
@@ -78,7 +88,7 @@ void uniform_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sen
 
     		// send and receive
 //    		s = MPI_Wtime();
-    		int distance = z * pow(r, x);
+    		int distance = z * myPow(r, x);
     		int recv_proc = (rank - distance + nprocs) % nprocs; // receive data from rank - 2^step process
     		int send_proc = (rank + distance) % nprocs; // send data from rank + 2^k process
     		long long comm_size = di * unit_size;
@@ -147,8 +157,8 @@ void uniform_norotation_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_D
 
     int unit_size = sendcount * typesize;
     int w = ceil(log(nprocs) / log(r)); // calculate the number of digits when using r-representation
-	int nlpow = pow(r, w-1);
-	int d = (pow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
+	int nlpow = myPow(r, w-1);
+	int d = (myPow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
 
 	// convert rank to base r representation
     int* rank_r_reps = (int*) malloc(nprocs * w * sizeof(int));
@@ -187,7 +197,7 @@ void uniform_norotation_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_D
 				}
 			}
 
-			int distance = z * pow(r, x);
+			int distance = z * myPow(r, x);
 			int recv_proc = (rank + distance) % nprocs; // receive data from rank - 2^step process
 			int send_proc = (rank - distance + nprocs) % nprocs; // send data from rank + 2^k process
 			long long comm_size = di * unit_size;
@@ -229,8 +239,8 @@ void uniform_norotation_radix_r_bruck_dt(int r, char *sendbuf, int sendcount, MP
 
     int unit_size = sendcount * typesize;
     int w = ceil(log(nprocs) / log(r)); // calculate the number of digits when using r-representation
-	int nlpow = pow(r, w-1);
-	int d = (pow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
+	int nlpow = myPow(r, w-1);
+	int d = (myPow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
 
 	// convert rank to base r representation
     int* rank_r_reps = (int*) malloc(nprocs * w * sizeof(int));
@@ -275,7 +285,7 @@ void uniform_norotation_radix_r_bruck_dt(int r, char *sendbuf, int sendcount, MP
 			MPI_Type_create_indexed_block(di, unit_size, send_displs, MPI_CHAR, &send_type);
 			MPI_Type_commit(&send_type);
 
-			int distance = z * pow(r, x);
+			int distance = z * myPow(r, x);
 			int recv_proc = (rank + distance) % nprocs; // receive data from rank - 2^step process
 			int send_proc = (rank - distance + nprocs) % nprocs; // send data from rank + 2^k process
 			MPI_Sendrecv(sendbuf, 1, send_type, send_proc, 0, rtemp_buffer, 1, send_type, recv_proc, 0, comm, MPI_STATUS_IGNORE);
