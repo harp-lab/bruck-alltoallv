@@ -7,7 +7,7 @@
 
 #include "../brucks.h"
 
-int ite_count = 1;
+int ite_count = 100;
 
 int main(int argc, char **argv)
 {
