@@ -101,20 +101,24 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases)
 			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
 
 
-//		double mpi_times[ITERATION_COUNT];
-//		for (int it=0; it < ITERATION_COUNT; it++) {
-//			double comm_start = MPI_Wtime();
-//			MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-//			double comm_end = MPI_Wtime();
-//			total_times[it] = comm_end - comm_start;
-//		}
-//
-//		for (int it=0; it < ITERATION_COUNT; it++) {
-//			double max_time = 0;
-//			MPI_Allreduce(&mpi_times[it], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-//			if (mpi_times[it] == max_time)
-//				std::cout << "[MPIAlltoall] " << nprocs << ", " << n << ", " <<  max_time << std::endl;
-//		}
+		double mpi_times[ITERATION_COUNT];
+		for (int it=0; it < ITERATION_COUNT; it++) {
+			double comm_start = MPI_Wtime();
+			MPI_Alltoall((char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
+			double comm_end = MPI_Wtime();
+			mpi_times[it] = comm_end - comm_start;
+		}
+
+		for (int it=0; it < ITERATION_COUNT; it++) {
+			double max_time = 0;
+			MPI_Allreduce(&mpi_times[it], &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+			if (mpi_times[it] == max_time)
+				std::cout << "[MPIAlltoall] " << nprocs << ", " << n << ", " <<  max_time << std::endl;
+		}
+
+		MPI_Barrier(MPI_COMM_WORLD);
+		if (rank == 0)
+			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
 
 		memset(&total_times, 0, ITERATION_COUNT*basecount*sizeof(double));
 		for (int i = 0; i < basecount; i++) {
