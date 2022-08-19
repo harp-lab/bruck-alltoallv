@@ -6,7 +6,7 @@
 
 #include "non_uniform_bruck.h"
 
-#define ITERATION_COUNT 40
+#define ITERATION_COUNT 20
 
 static int rank, nprocs;
 void run_non_uniform(int nprocs, int dist);
@@ -144,25 +144,9 @@ void run_non_uniform(int nprocs, int dist)
 				std::cout << "[MPIAlltoallv]" << " [" << dist << " " << nprocs << " " << range << " " << entry_count << "] "<<  max_time << std::endl;
 		}
 
-//		MPI_Barrier(MPI_COMM_WORLD);
-//		if (rank == 0)
-//			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
-//
-//		// Padded All-to-all algorithm
-//		for (int it=0; it < ITERATION_COUNT; it++)
-//		{
-//			int index = 0;
-//			for (int i=0; i < nprocs; i++)
-//			{
-//				for (int j = 0; j < sendcounts[i]; j++)
-//					send_buffer[index++] = i + rank * 10;
-//			}
-//			padded_alltoall_non_uniform_benchmark(dist, 0, (char*)send_buffer, sendcounts, sdispls, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, recvcounts, rdispls, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
-//		}
-//
-//		MPI_Barrier(MPI_COMM_WORLD);
-//		if (rank == 0)
-//			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
+		MPI_Barrier(MPI_COMM_WORLD);
+		if (rank == 0)
+			std::cout << "----------------------------------------------------------------" << std::endl<< std::endl;
 
 		// Padded Bruck algorithm
 		for (int it=0; it < ITERATION_COUNT; it++)
