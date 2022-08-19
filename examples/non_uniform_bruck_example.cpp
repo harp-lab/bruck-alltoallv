@@ -159,11 +159,11 @@ void run_non_uniform(int nprocs, int dist)
 			}
 			padded_bruck_non_uniform_benchmark(dist, 0, (char*)send_buffer, sendcounts, sdispls, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, recvcounts, rdispls, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
 
-			// check if correct
-			for (int d = 0; d < roffset; d++) {
-				if ( (recv_buffer[d] % 10) != (rank % 10) )
-					std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
-			}
+//			// check if correct
+//			for (int d = 0; d < roffset; d++) {
+//				if ( (recv_buffer[d] % 10) != (rank % 10) )
+//					std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
+//			}
 		}
 
 		MPI_Barrier(MPI_COMM_WORLD);
@@ -184,11 +184,11 @@ void run_non_uniform(int nprocs, int dist)
 			}
 			twophase_non_uniform_benchmark(dist, 0, (char*)send_buffer, scounts, sdispls, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, recvcounts, rdispls, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
 
-			// check if correct
-			for (int d = 0; d < roffset; d++) {
-				if ( (recv_buffer[d] % 10) != (rank % 10) )
-					std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
-			}
+//			// check if correct
+//			for (int d = 0; d < roffset; d++) {
+//				if ( (recv_buffer[d] % 10) != (rank % 10) )
+//					std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
+//			}
 		}
 
 		MPI_Barrier(MPI_COMM_WORLD);
