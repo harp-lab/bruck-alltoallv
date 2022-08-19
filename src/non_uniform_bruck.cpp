@@ -628,6 +628,7 @@ void twophase_non_uniform_benchmark(int dist, int range, char *sendbuf, int *sen
 
 		// 5) replace
 		double replace_start = MPI_Wtime();
+		offset = 0;
 		for (int i = 0; i < sendb_num; i++)
 		{
 			int send_index = rotate_index_array[send_indexes[i]];
