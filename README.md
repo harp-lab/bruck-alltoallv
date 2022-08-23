@@ -6,11 +6,17 @@ Therefore, we implement and empirically evaluate all existing variants of the Br
 
 ## Padded Bruck 
 
-# Citing 
-Fan K, Gilray T, Pascucci V, Huang X, Micinski K, Kumar S. Optimizing the Bruck Algorithm for Non-uniform All-to-all Communication. InProceedings of the 31st International Symposium on High-Performance Parallel and Distributed Computing 2022 Jun 27 (pp. 172-184).
+Padded Bruck converts a non-uniform all-to-all problem into a uni- form all-to-all problem through padding—a natural extension. There are three main phases: (a) padding all non-uniform buffers to a fixed-sized buffer, (b) invoking Bruck-style communication for the uniform buffers, and (c) scanning the received buffers to extract the actual data.
 
-Building and installing
-------------------------------------------
+<img src="https://github.com/harp-lab/bruck-alltoallv/blob/main/figs/padded_bruck.png" width="800"/>
+
+## Two-phase Bruck
+
+The Two-phase Bruck algorithm performs a coupled two-phase data exchange (for all log(𝑃) communication steps) and by using a large monolithic buffer. The two-phase communication involves a meta-data exchange followed by actual data transfer, where the meta-data prepares processes for the actual data exchange. The monolithic working buffer facilitates seamless intermediate data exchanges, pre-allocated to an upper bound on overflow data. The approach requires more space in the transfer phases to optimize communication time.
+
+<img src="https://github.com/harp-lab/bruck-alltoallv/blob/main/figs/two_phase_alg.png" width="1000"/>
+
+## Building and installing
 
 Building and installing bruck-alltoallv requires cmake 3.1+ and a current C++11-compatible Compiler. Clone bruck-alltoallv from github and proceed
 as follows:
@@ -21,9 +27,18 @@ as follows:
      $ mkdir build && cd build
      $ cmake ..
      $ make
-     
-     
-Examples
-------------------------------------------
 
-The examples folder contains two examples: `uniform bruck algorithm example.cpp` and non `uniform bruck algorithm example.cpp`. The first is used to run uniform Bruck algorithm variants, and the second is used to run non-uniform Bruck algorithm variants.
+## Examples
+
+We conduct a thorough evaluation of our algorithms using synthetic microbenchmarks on the Theta Supercomputer [4] of Argonne National Lab (ANL). 
+
+     $ cd examples
+     $ mpirun -n <nprocs> ./nubruck
+
+# Citing 
+```
+Fan K, Gilray T, Pascucci V, Huang X, Micinski K, Kumar S. Optimizing the Bruck Algorithm for Non-uniform All-to-all Communication. InProceedings of the 31st International Symposium on High-Performance Parallel and Distributed Computing 2022 Jun 27 (pp. 172-184).
+```
+     
+     
+
