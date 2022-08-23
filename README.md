@@ -16,6 +16,21 @@ The Two-phase Bruck algorithm performs a coupled two-phase data exchange (for al
 
 <img src="https://github.com/harp-lab/bruck-alltoallv/blob/main/figs/two_phase_alg.png" width="1000"/>
 
+## Input Parameters 
+
+The same with MPI_Alltoallv.
+
+```
+sendbuf: starting address of send buffer (char*)
+sendcounts: integer array equal to the group size specifying the number of elements to send to each processor
+sdispls: integer array (of length group size). Entry j specifies the displacement (relative to sendbuf from which to take the outgoing data destined for process j
+sendtype: data type of send buffer elements (handle)
+recvcounts: integer array equal to the group size specifying the maximum number of elements that can be received from each processor
+rdispls: integer array (of length group size). Entry i specifies the displacement (relative to recvbuf at which to place the incoming data from process i
+recvtype: data type of receive buffer elements (handle)
+comm: communicator (handle)
+```
+
 ## Building and installing
 
 Building and installing bruck-alltoallv requires cmake 3.1+ and a current C++11-compatible Compiler. Clone bruck-alltoallv from github and proceed
