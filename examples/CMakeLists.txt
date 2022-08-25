@@ -6,9 +6,7 @@ SET_SOURCE_FILES_PROPERTIES(${CFILES} PROPERTIES LANGUAGE CXX COMPILE_FLAGS "-st
 add_executable(ubruck ./uniform_bruck_example.cpp)
 add_executable(nubruck ./non_uniform_bruck_example.cpp)
 add_executable(rbruck ./radix_r_bruck_example.cpp)
-add_executable(pingpong ./pingpongcheck.cpp)
 
 target_link_libraries(ubruck bruckLib)
 target_link_libraries(nubruck bruckLib)
 target_link_libraries(rbruck bruckLib)
-target_link_libraries(pingpong bruckLib)
