@@ -14,11 +14,11 @@ void exchange_descending(int loopCount, int mesgsize, char* sendbuf, char* recvb
 
 int main(int argc, char **argv)
 {
-    if (argc < 2) {
-    	std::cout << "Usage: mpirun -n <nprocs>" << argv[0] << "<loopCount>" << std::endl;
-    }
+//    if (argc < 2) {
+//    	std::cout << "Usage: mpirun -n <nprocs>" << argv[0] << "<loopCount>" << std::endl;
+//    }
 
-    int loopCount = atoi(argv[1]);
+//    int loopCount = atoi(argv[1]);
 
     // MPI Initial
     if (MPI_Init(&argc, &argv) != MPI_SUCCESS)
@@ -28,11 +28,13 @@ int main(int argc, char **argv)
     if (MPI_Comm_rank(MPI_COMM_WORLD, &rank) != MPI_SUCCESS)
     	std::cout << "ERROR: MPI_Comm_rank error\n" << std::endl;
 
-    // for warm-up only
-    running_test(loopCount, 5, 1);
+    int loopCount = ceil(log2(nprocs));
 
-    // running tes
-    running_test(loopCount, 40, 0);
+    // for warm-up only
+    running_test(loopCount, 4, 1);
+
+    // running test
+    running_test(loopCount, 4, 0);
 
 	MPI_Finalize();
     return 0;
@@ -82,6 +84,7 @@ void running_test(int loopCount, int iteCount, int warmup) {
 }
 
 void exchange_ascending(int loopCount, int mesgsize, char* sendbuf, char* recvbuf) {
+
 	int distance = 1;
 	for (int i = 0; i < loopCount; i++) {
 		int sendrank = (rank + distance) % nprocs;
@@ -94,7 +97,7 @@ void exchange_ascending(int loopCount, int mesgsize, char* sendbuf, char* recvbu
 }
 
 void exchange_descending(int loopCount, int mesgsize, char* sendbuf, char* recvbuf) {
-	int distance = pow(2, loopCount);
+	int distance = pow(2, loopCount-1);
 	for (int i = 0; i < loopCount; i++) {
 		int sendrank = (rank + distance) % nprocs;
 		int recvrank = (rank - distance + nprocs) % nprocs;
