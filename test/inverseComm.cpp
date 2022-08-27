@@ -31,10 +31,10 @@ int main(int argc, char **argv)
     int loopCount = ceil(log2(nprocs));
 
     // for warm-up only
-    running_test(loopCount, 4, 1);
+    running_test(loopCount, 10, 1);
 
     // running test
-    running_test(loopCount, 4, 0);
+    running_test(loopCount, 40, 0);
 
 	MPI_Finalize();
     return 0;
@@ -51,22 +51,6 @@ void running_test(int loopCount, int iteCount, int warmup) {
 
 	for (int i = 0; i < iteCount; i++) {
 		double start = MPI_Wtime();
-		exchange_ascending(loopCount, mesgsize, sendbuf, recvbuf);
-		double end = MPI_Wtime();
-		double time = end - start;
-
-		if (warmup == 0) {
-			double max_time = 0;
-			MPI_Allreduce(&time, &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-			if (time == max_time)
-				std::cout << "Ascending " << nprocs << " " << mesgsize << " " << time << std::endl;
-		}
-	}
-
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	for (int i = 0; i < iteCount; i++) {
-		double start = MPI_Wtime();
 		exchange_descending(loopCount, mesgsize, sendbuf, recvbuf);
 		double end = MPI_Wtime();
 		double time = end - start;
@@ -76,6 +60,22 @@ void running_test(int loopCount, int iteCount, int warmup) {
 			MPI_Allreduce(&time, &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 			if (time == max_time)
 				std::cout << "Descending " << nprocs << " " << mesgsize << " " << time << std::endl;
+		}
+	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	for (int i = 0; i < iteCount; i++) {
+		double start = MPI_Wtime();
+		exchange_ascending(loopCount, mesgsize, sendbuf, recvbuf);
+		double end = MPI_Wtime();
+		double time = end - start;
+
+		if (warmup == 0) {
+			double max_time = 0;
+			MPI_Allreduce(&time, &max_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+			if (time == max_time)
+				std::cout << "Ascending " << nprocs << " " << mesgsize << " " << time << std::endl;
 		}
 	}
 
