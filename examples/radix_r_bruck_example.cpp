@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     	std::cout << "ERROR: MPI_Comm_rank error\n" << std::endl;
 
     if (argc < 2) {
-    	std::cout << "Usage: mpirun -n <nprocs> " << argv[0] << " <baselist>" << std::endl;
+    	std::cout << "Usage: mpirun -n <nprocs> " << argv[0] << " <baselist> " << std::endl;
     	return -1;
     }
 
@@ -70,7 +70,7 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases) {
 				}
 				memset(recv_buffer, 0, n*nprocs*sizeof(long long));
 
-				uniform_isplit_r_bruck(4, bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
+				uniform_isplit_r_bruck(64, bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
 
 //				double st = MPI_Wtime();
 //				uniform_modified_inverse_r_bruck(bases[i], (char*)send_buffer, n, MPI_UNSIGNED_LONG_LONG, (char*)recv_buffer, n, MPI_UNSIGNED_LONG_LONG, MPI_COMM_WORLD);
