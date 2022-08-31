@@ -78,10 +78,15 @@ static void run_radix_r_bruck(int nprocs, std::vector<int> bases) {
 //				total_times[i*ITERATION_COUNT + it] = et - st;
 
 				// check if correct
+				int erros = 0;
 				for (int d = 0; d < n*nprocs; d++) {
-					if ( (recv_buffer[d] % 10) != (rank % 10) )
-						std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
+					if ( (recv_buffer[d] % 10) != (rank % 10) ) {
+						erros ++;
+					}
+//						std::cout << "EROOR VALUE: " << rank << " " << d << " " << recv_buffer[d] << std::endl;
 				}
+				if (rank == 0)
+					std::cout << "ERROR: " << bases[i] << " " << erros << std::endl;
 
 			}
 		}
