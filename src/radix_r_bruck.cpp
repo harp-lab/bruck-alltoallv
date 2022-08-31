@@ -269,7 +269,7 @@ void uniform_modified_inverse_r_bruck(int r, char *sendbuf, int sendcount, MPI_D
 }
 
 
-void uniform_modified_isplit_r_bruck(int n, int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
+void uniform_isplit_r_bruck(int n, int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm)
 {
     int rank, nprocs;
     MPI_Comm_rank(comm, &rank);
@@ -279,65 +279,125 @@ void uniform_modified_isplit_r_bruck(int n, int r, char *sendbuf, int sendcount,
     MPI_Type_size(sendtype, &typesize);
 
     int unit_size = sendcount * typesize;
-    int w = ceil(log(nprocs) / log(r)); // calculate the number of digits when using r-representation
-	int nlpow = pow(r, w-1);
-	int d = (pow(r, w) - nprocs) / nlpow; // calculate the number of highest digits
 
+	int w = ceil(log(nprocs) / log(r));
+	int lpow = pow(r, w-1);
+
+	int ngroup = nprocs / n;
+	int sw = ceil(log(n) / log(r));
+	int gw = ceil(log(ngroup) / log(r));
+
+	int nlpow = pow(r, sw-1);
+	int sd = (pow(r, sw) - n) / nlpow;
+
+	int glpow = pow(r, gw-1);
+	int gd = (pow(r, gw) - n) / glpow;
+
+	int maxNum = (n > ngroup)? n: ngroup;
+	int maxW = (gw > sw)? gw: sw;
 	// convert rank to base r representation
-    int* rank_r_reps = (int*) malloc(nprocs * w * sizeof(int));
-	for (int i = 0; i < nprocs; i++) {
-		std::vector<int> r_rep = convert10tob(w, i, r);
-		std::memcpy(&rank_r_reps[i*w], r_rep.data(), w*sizeof(int));
+	int* rank_r_reps = (int*) malloc(maxNum * maxW * sizeof(int));
+	for (int i = 0; i < maxNum; i++) {
+		std::vector<int> r_rep = convert10tob(maxW, i, r);
+		std::memcpy(&rank_r_reps[i*maxW], r_rep.data(), maxW*sizeof(int));
 	}
 
-	for (int i = 0; i < nprocs; i++) {
-		int index = (2*rank-i+nprocs)%nprocs;
-		memcpy(recvbuf+(index*unit_size), sendbuf+(i*unit_size), unit_size);
+	int grank = rank % n;
+	int gid = rank / n;
+
+	for (int i = 0; i < ngroup; i++) {
+		int gsp = i*n;
+		for (int j = 0; j < n; j++) {
+			int index = gsp + ((j - grank + n) % n);
+			memcpy(recvbuf+(index*unit_size), sendbuf+((i*n+j)*unit_size), unit_size);
+		}
 	}
 
-	int sent_blocks[nlpow];
+	int sent_blocks[lpow];
 	int di = 0;
 	int ci = 0;
 
-	int comm_steps = (r - 1)*w - d;
-	char* temp_buffer = (char*)malloc(nlpow * unit_size); // temporary buffer
+	char* temp_buffer = (char*)malloc(lpow * unit_size); // temporary buffer
 
-	int sp = 0, ep = 0, sw = 0;
-	if (nprocs > n) {
-		int ngroup = nprocs / n;
+    for (int x = 0; x < sw; x++) {
+    	int ze = (x == sw - 1)? r - sd: r;
+    	for (int z = 1; z < ze; z++) {
+    		// get the sent data-blocks
+    		// copy blocks which need to be sent at this step
+    		di = 0;
+    		ci = 0;
+    		for (int i = 0; i < nprocs; i++) {
+    			int gid = i % n;
+    			if (rank_r_reps[gid*maxW + x] == z){
+    				memcpy(&temp_buffer[unit_size*ci++], &recvbuf[i*unit_size], unit_size);
+    				sent_blocks[di++] = i;
+    			}
+    		}
+
+    		// send and receive
+    		int distance = z * myPow(r, x); // pow(1, 51) = 51, int d = pow(1, 51); // 50
+    		int recv_proc = gid*n + (grank - distance + n) % n; // receive data from rank - 2^step process
+    		int send_proc = gid*n + (grank + distance) % n; // send data from rank + 2^k process
+
+    		long long comm_size = di * unit_size;
+    		MPI_Sendrecv(temp_buffer, comm_size, MPI_CHAR, send_proc, 0, sendbuf, comm_size, MPI_CHAR, recv_proc, 0, comm, MPI_STATUS_IGNORE);
+
+    		// replace with received data
+    		for (int i = 0; i < di; i++) {
+    			long long offset = sent_blocks[i] * unit_size;
+    			memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
+    		}
+    	}
+    }
+	for (int i = 0; i < ngroup; i++) {
+		int gsp = i*n;
+		for (int j = 0; j < n; j++) {
+			int index = gsp + (grank - j + n) % n;
+			memcpy(&sendbuf[index*unit_size], &recvbuf[(i*n+j)*unit_size], unit_size);
+		}
 	}
 
-//    for (int x = w-1; x > -1; x--) {
-//    	int ze = (x == w - 1)? r - d: r;
-//    	for (int z = ze-1; z > 0; z--) {
-//    		// get the sent data-blocks
-//    		// copy blocks which need to be sent at this step
-//    		di = 0;
-//    		ci = 0;
-//    		for (int i = 0; i < nprocs; i++) {
-//    			if (rank_r_reps[i*w + x] == z){
-//    				int id = (i + rank) % nprocs;
-//    				memcpy(&temp_buffer[unit_size*ci++], &recvbuf[id*unit_size], unit_size);
-//    				sent_blocks[di++] = id;
-//
-//    			}
-//    		}
-//
-//    		// send and receive
-//    		int distance = z * myPow(r, x); // pow(1, 51) = 51, int d = pow(1, 51); // 50
-//    		int recv_proc = (rank + distance) % nprocs; // receive data from rank - 2^step process
-//    		int send_proc = (rank - distance + nprocs) % nprocs; // send data from rank + 2^k process
-//    		long long comm_size = di * unit_size;
-//    		MPI_Sendrecv(temp_buffer, comm_size, MPI_CHAR, send_proc, 0, sendbuf, comm_size, MPI_CHAR, recv_proc, 0, comm, MPI_STATUS_IGNORE);
-//
-//    		// replace with received data
-//    		for (int i = 0; i < di; i++)
-//    		{
-//    			long long offset = sent_blocks[i] * unit_size;
-//    			memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
-//    		}
-//    	}
-//    }
+
+    unit_size = n * sendcount * typesize;
+
+	for (int i = 0; i < ngroup; i++) {
+		int index = (i - gid + ngroup) % ngroup;
+		memcpy(recvbuf+(index*unit_size), sendbuf+(i*unit_size), unit_size);
+	}
+
+
+    for (int x = 0; x < gw; x++) {
+    	int ze = (x == gw - 1)? r - gd: r;
+    	for (int z = 1; z < ze; z++) {
+    		di = 0;
+    		ci = 0;
+    		for (int i = 0; i < ngroup; i++) {
+    			if (rank_r_reps[i*maxW + x] == z){
+    				memcpy(&temp_buffer[unit_size*ci++], &recvbuf[i*unit_size], unit_size);
+    				sent_blocks[di++] = i;
+    			}
+    		}
+
+    		int distance = z * myPow(r, x) * n; // pow(1, 51) = 51, int d = pow(1, 51); // 50
+    		int recv_proc = (gid*n + (grank - distance + nprocs)) % nprocs; // receive data from rank - 2^step process
+    		int send_proc = (gid*n + (grank + distance)) % nprocs; // send data from rank + 2^k process
+
+    		long long comm_size = di * unit_size;
+    		MPI_Sendrecv(temp_buffer, comm_size, MPI_CHAR, send_proc, 0, sendbuf, comm_size, MPI_CHAR, recv_proc, 0, comm, MPI_STATUS_IGNORE);
+
+
+    		for (int i = 0; i < di; i++) {
+    			long long offset = sent_blocks[i] * unit_size;
+    			memcpy(recvbuf+offset, sendbuf+(i*unit_size), unit_size);
+    		}
+
+    	}
+    }
+
+	for (int i = 0; i < ngroup; i++) {
+		int index = (gid - i + ngroup) % ngroup;
+		memcpy(sendbuf+(index*unit_size), recvbuf+(i*unit_size), unit_size);
+	}
 
 	free(rank_r_reps);
 	free(temp_buffer);

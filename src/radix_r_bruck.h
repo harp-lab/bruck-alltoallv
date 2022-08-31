@@ -21,4 +21,6 @@ void uniform_modified_radix_r_bruck(int r, char *sendbuf, int sendcount, MPI_Dat
 
 void uniform_modified_inverse_r_bruck(int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm);
 
+void uniform_isplit_r_bruck(int n, int r, char *sendbuf, int sendcount, MPI_Datatype sendtype, char *recvbuf, int recvcount, MPI_Datatype recvtype,  MPI_Comm comm);
+
 #endif /* SRC_RADIX_R_BRUCK_H_ */
