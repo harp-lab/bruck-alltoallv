@@ -19,7 +19,9 @@ void twophase_bruck_alltoallv(char *sendbuf, int *sendcounts, int *sdispls, MPI_
 	int local_max_count = 0;
 	int max_send_count = 0;
 
+	int csendcounts[nprocs];
 	for (int i = 0; i < nprocs; i++) {
+		csendcounts[i] = sendcounts[i];
 		if (sendcounts[i] > local_max_count)
 			local_max_count = sendcounts[i];
 	}
@@ -53,12 +55,12 @@ void twophase_bruck_alltoallv(char *sendbuf, int *sendcounts, int *sdispls, MPI_
 		int offset = 0;
 		for (int i = 0; i < sendb_num; i++) {
 			int send_index = rotate_index_array[send_indexes[i]];
-			metadata_send[i] = sendcounts[send_index];
+			metadata_send[i] = csendcounts[send_index];
 			if (pos_status[send_index] == 0)
-				memcpy(&temp_send_buffer[offset], &sendbuf[sdispls[send_index]*typesize], sendcounts[send_index]*typesize);
+				memcpy(&temp_send_buffer[offset], &sendbuf[sdispls[send_index]*typesize], csendcounts[send_index]*typesize);
 			else
-				memcpy(&temp_send_buffer[offset], &extra_buffer[send_indexes[i]*max_send_count*typesize], sendcounts[send_index]*typesize);
-			offset += sendcounts[send_index]*typesize;
+				memcpy(&temp_send_buffer[offset], &extra_buffer[send_indexes[i]*max_send_count*typesize], csendcounts[send_index]*typesize);
+			offset += csendcounts[send_index]*typesize;
 		}
 
 		// 3) exchange metadata
@@ -80,7 +82,7 @@ void twophase_bruck_alltoallv(char *sendbuf, int *sendcounts, int *sdispls, MPI_
 			memcpy(&extra_buffer[send_indexes[i]*max_send_count*typesize], &temp_recv_buffer[offset], metadata_recv[i]*typesize);
 			offset += metadata_recv[i]*typesize;
 			pos_status[send_index] = 1;
-			sendcounts[send_index] = metadata_recv[i];
+			csendcounts[send_index] = metadata_recv[i];
 		}
 		ind++;
 	}
